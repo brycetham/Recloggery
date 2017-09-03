@@ -7,34 +7,34 @@
     <title>Recloggery</title>
 
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.10.15/css/dataTables.bootstrap4.min.css">
+    
   </head>
   <body>
     <div class="container" style="padding:20px">
         <div class="row">
             <div class="col">
+                <!-- SET YOUR USERNAME BELOW -->
                 <h1><span id="username">Battlestriker123</span>'s Recommendations</h1>
-                <p>powered by <a href="http://backloggery.com">Backloggery</a></p>
+                <!-- SET YOUR USERNAME ABOVE -->
+                <p class="lead">powered by <a href="http://backloggery.com">Backloggery</a></p>
             </div>
         </div>
         <div class="row">
             <div class="col">
-                <table class="table table-hover" id="game-table">
+                <table class="table table-hover" id="game-table" style="width:100%;display:none;">
                     <thead>
                         <tr>
                             <th>Game</th>
                             <th>Score</th>
-                            <th></th>
-                            <th></th>
+                            <th></th> <!-- title -->
+                            <th></th> <!-- system -->
                         </tr>
                     </thead>
                     <tbody id="game-list">
                     </tbody>
                 </table>
-                <div class="progress" id="loading">
-                    <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" aria-valuemax="100" style="width: 100%">
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -47,19 +47,18 @@
     
     <script>
         $(document).ready(function () {
-            getGames("", 0);
+            initializeTable();
+            getGames(0);
         });
         
-        function getGames(content, ajid) {
+        function getGames(ajid) {
 			var proxy = 'https://cors.now.sh/';
             $.get(proxy + 'http://backloggery.com/ajax_moregames.php?user=' + $('#username').text() + '&alpha=1&ajid=' + ajid, function(data) {
                 var html = $.parseHTML(data);
                 var next = true;
                 $.each(html, function(i, gamebox) {
                     if ($(gamebox).hasClass('systemend')) {
-                        $('#loading').html("");
-                        $('#game-list').html(content);
-                        initializeTable();
+                        initializeFilters();
                         next = false;
                         return;
                     } else if (i % 2 != 0) {
@@ -68,30 +67,45 @@
 
                         var score = $($('.lift', gamebox)[1]).attr('src');						
                         score = score ? score[7] : 0;
-                        var stars = ['N/A', '★☆☆☆☆', '★★☆☆☆', '★★★☆☆', '★★★★☆', '★★★★★'];
+                        var stars = ['N/A', '★☆☆☆☆&nbsp1', '★★☆☆☆&nbsp2', '★★★☆☆&nbsp3', '★★★★☆&nbsp4', '★★★★★&nbsp5'];
+                        var colors = ['secondary', 'dark', 'danger', 'warning', 'success', 'primary'];
                        
                         var comment = $($('[id^=comments]', gamebox)[0]).text();
                         comment = comment ? comment : '(no review available)';
 						                       
                         if (score) {
-                            content += "<tr><td><b>" + title + "</b> <small><span class=\"badge badge-secondary\">" + system + "</span><br />" + comment + "</small></td><td>" + stars[score] + "</td><td>" + title + "</td><td>" + system + "</td></tr>";
+                            var gameContent = "<b>" + title + "</b> <small><span class=\"badge badge-secondary\">" + system + "</span><br />" + comment + "</small>";
+                            var scoreContent = "<span class=\"badge badge-pill badge-" + colors[score] + "\">" + stars[score] + "</span>";
+                            var row = $('#game-table').dataTable().fnAddData([gameContent, scoreContent, title, system]);
                         }
                     }
                 });
+                if (ajid == 0) {
+                    $('#game-table').css('display', 'table');
+                }
                 if (next) {
-                    getGames(content, ajid + 50);
+                    getGames(ajid + 50);
                 }
             });
         }
     
         function initializeTable() {
             $('#game-table').DataTable( {
+                "bAutoWidth": false,
+                "bDeferRender": true,
                 "pagingType": "simple",
                 "columnDefs": [
                     {
-                        "targets": [ 0, 1 ],
+                        "targets": [ 0 ],
                         "visible": true,
-                        "searchable": false
+                        "searchable": false,
+                        "width": "90%"
+                    },
+                    {
+                        "targets": [ 1 ],
+                        "visible": true,
+                        "searchable": true,
+                        "width": "10%"
                     },
                     {
                         "targets": [ 2, 3 ],
@@ -99,8 +113,34 @@
                         "searchable": true
                     }
                 ]
-            } );
+            });
+            $('#game-table_length').removeClass('dataTables_length');
+            $('#game-table_length').html("<i class=\"fa fa-circle-o-notch fa-spin fa-2x fa-fw text-secondary\"></i>");
         }
+    
+        function initializeFilters() {
+            var systems = "<select class=\"form-control form-control-sm\" id=\"filter-systems\" onchange=\"filterBySystem()\"><option disabled selected>&ltsystem&gt</option><option>" + $('#game-table').dataTable().api().column(3).data().unique().sort().join('</option><option>') + "<\select>";
+            var scores = "<select class=\"form-control form-control-sm\" id=\"filter-scores\" onchange=\"filterByScore()\"><option disabled selected>&ltscore&gt</option><option>5 stars</option><option>4 stars</option><option>3 stars</option><option>2 stars</option><option>1 star</option></select>";
+            $('#game-table_length').hide().html("<form class=\"form-inline\">Filter by &nbsp" + systems + "&nbsp and by &nbsp" + scores + "&nbsp&nbsp <button type=\"button\" class=\"btn btn-sm btn-outline-dark\" onclick=\"clearFilter()\"><i class=\"fa fa-refresh\"></i> Reset</button></form>").fadeIn();
+        }
+    
+        function filterBySystem() {
+            var s = $('#filter-systems').find(":selected").text();
+            $('#game-table').dataTable().fnFilter("^" + s + "$", 3, true);
+        }
+    
+        function filterByScore() {
+            var s = $('#filter-scores').find(":selected").text();
+            $('#game-table').dataTable().fnFilter(s[0], 1);
+        }
+        
+        function clearFilter() {
+            $('#filter-systems')[0].selectedIndex = 0;
+            $('#filter-scores')[0].selectedIndex = 0;
+            $('#game-table').dataTable().fnFilter("", 3);
+            $('#game-table').dataTable().fnFilter("", 1);
+        }
+    
     </script>
     
   </body>
