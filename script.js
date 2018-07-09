@@ -5,7 +5,7 @@ $(document).ready(function () {
 
 function getGames(ajid) {
     var top25 = ['Mario & Luigi: Superstar Saga','Conker\'s Bad Fur Day','Super Mario World: Super Mario Advance 2','Paper Mario: The Thousand-Year Door','The Legend Of Zelda: Breath Of The Wild','Banjo-Tooie','Super Mario Odyssey','Portal 2','Super Mario 64','RollerCoaster Tycoon 2','Ape Escape 3','Burnout 3: Takedown','New Super Mario Bros. Wii','Saints Row: The Third','Ape Escape 2','Mario Kart DS','Super Mario 3D Land','Portal','Fantasy Life','WarioWare, Inc.: Mega Microgames!','Super Smash Bros. Brawl','Undertale','Xenoblade Chronicles','Antichamber','Cave Story+'];
-    var proxy = 'https://cors.now.sh/';
+    var proxy = 'https://cors-anywhere.herokuapp.com/';
     $.get(proxy + 'http://backloggery.com/ajax_moregames.php?user=' + $('#username').text() + '&alpha=1&ajid=' + ajid, function(data) {
         var html = $.parseHTML(data);
         var next = true;
@@ -42,6 +42,9 @@ function getGames(ajid) {
         if (next) {
             getGames(ajid + 50);
         }
+    })
+    .fail(function() {
+        alert("Uh oh! There was a problem fetching games from Backloggery. Please try again later.");
     });
 }
 
