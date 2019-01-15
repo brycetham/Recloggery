@@ -1,40 +1,45 @@
 html, body {
-    max-width: 100%;
-    overflow-x: hidden;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .badge-pill {
-    width: 100%;
+  width: 100%;
 }
 
 .navbar-brand {
-    font-size: 1.7em;
-    margin-right: 5px;
+  font-size: 1.7em;
+  margin-right: 5px;
 }
 
 .row {
-    margin-top: 10px;
-    margin-bottom: 10px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+}
+
+#filter-top25 {
+  margin-left: 10px;
+  margin-right: 5px;
 }
 
 @media only screen and (max-device-width : 768px) {
-    .navbar-brand {
-        white-space: normal;
-    }
-    .navbar button {
-        margin: 10px 0;
-    }
-    #game-table_length {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-    form {
-        justify-content: center;
-        line-height: 2.0em;
-    }
-    #game-table_paginate {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-    }
+  .navbar-brand {
+    white-space: normal;
+  }
+  .navbar button {
+    margin: 10px 0;
+  }
+  #game-table_length {
+    text-align: center;
+    margin-bottom: 30px;
+  }
+  form {
+    justify-content: center;
+    line-height: 2.0em;
+  }
+  #game-table_paginate {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
 }

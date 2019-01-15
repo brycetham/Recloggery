@@ -1,4 +1,4 @@
-# Recloggery v2.0
+# Recloggery v2.2
 A recommendations chart powered by [Backloggery](http://backloggery.com)!
 
 ### What is Recloggery?
