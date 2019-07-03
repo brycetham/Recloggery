@@ -1,17 +1,20 @@
 $(document).ready(function () {
   initializeTable();
-  $.get('https://jsonblob.com/api/jsonBlob/c10dd5ce-1909-11e9-be64-3bb87445f625', function(top25) {
-    getGames(0, top25);
-  })
-  .fail(function() {
-    alert("Uh oh! There was a problem fetching games from the JSON Blob. Please try again later.");
-    $('#game-table_length').hide().html("<span class=\"text-danger\"><i class=\"far fa-times-circle\"></i> Error fetching games. Try again later.</span>").show();
-  });
+  var top25 = ['Mario & Luigi: Superstar Saga','Conker\'s Bad Fur Day','Super Mario World: Super Mario Advance 2','Paper Mario: The Thousand-Year Door','The Legend of Zelda: Breath of the Wild','Banjo-Tooie','Super Mario Odyssey','Portal 2','Super Mario 64','RollerCoaster Tycoon 2','Ape Escape 3','Burnout 3: Takedown','New Super Mario Bros. Wii','Saints Row: The Third','Octopath Traveler','Mario Kart DS','Ape Escape 2','Super Mario 3D Land','Portal','Fantasy Life','WarioWare, Inc.: Mega Microgames!','Super Smash Bros. Brawl','Undertale','Xenoblade Chronicles','Antichamber'];
+  getGames(0, top25);
+  // $.get('https://jsonblob.com/api/jsonBlob/c10dd5ce-1909-11e9-be64-3bb87445f625', function(top25) {
+  //   getGames(0, top25);
+  // })
+  // .fail(function() {
+  //   alert("Uh oh! There was a problem fetching games from the JSON Blob. Please try again later.");
+  //   $('#game-table_length').hide().html("<span class=\"text-danger\"><i class=\"far fa-times-circle\"></i> Error fetching games. Try again later.</span>").show();
+  // });
 });
 
 function getGames(ajid, top25) {
   var proxy = 'https://cors-anywhere.herokuapp.com/';
-  $.get(proxy + 'http://backloggery.com/ajax_moregames.php?user=' + $('#username').text() + '&alpha=1&ajid=' + ajid, function(data) {
+  var url = proxy + 'http://backloggery.com/ajax_moregames.php?user=' + $('#username').text() + '&alpha=1&ajid=' + ajid;
+  $.get(url, function(data) {
     var html = $.parseHTML(data);
     var next = true;
     $.each(html, function(i, gamebox) {
@@ -35,7 +38,7 @@ function getGames(ajid, top25) {
 
         if (score) {
           var award = top25.includes(title) ? 'top25' : '';
-          var gameContent = "<b>" + title + "</b> <small><span class=\"badge badge-secondary\">" + system + "</span><br />" + comment + "</small>";
+          var gameContent = "<b>" + title + "</b> <small><span class=\"badge badge-secondary badge-system\">" + system + "</span><br />" + comment + "</small>";
           var scoreContent = "<span class=\"badge badge-pill badge-" + colors[score] + "\"><p hidden>" + score + "</p>" + stars[score] + "</span>";
           var row = $('#game-table').dataTable().fnAddData([gameContent, scoreContent, title, system, award]);
         }

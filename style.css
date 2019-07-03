@@ -7,6 +7,10 @@ html, body {
   width: 100%;
 }
 
+.badge-system {
+  margin-left: 2px;
+}
+
 .navbar-brand {
   font-size: 1.7em;
   margin-right: 5px;
