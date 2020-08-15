@@ -1,17 +1,10 @@
 $(document).ready(function () {
   initializeTable();
-  var top25 = ['Mario & Luigi: Superstar Saga','Conker\'s Bad Fur Day','Super Mario World: Super Mario Advance 2','Paper Mario: The Thousand-Year Door','The Legend of Zelda: Breath of the Wild','Banjo-Tooie','Super Mario Odyssey','Portal 2','Super Mario 64','RollerCoaster Tycoon 2','Ape Escape 3','Burnout 3: Takedown','New Super Mario Bros. Wii','Saints Row: The Third','Octopath Traveler','Mario Kart DS','Ape Escape 2','Super Mario 3D Land','Portal','Fantasy Life','WarioWare, Inc.: Mega Microgames!','Super Smash Bros. Brawl','Undertale','Xenoblade Chronicles','Antichamber'];
-  getGames(0, top25);
-  // $.get('https://jsonblob.com/api/jsonBlob/c10dd5ce-1909-11e9-be64-3bb87445f625', function(top25) {
-  //   getGames(0, top25);
-  // })
-  // .fail(function() {
-  //   alert("Uh oh! There was a problem fetching games from the JSON Blob. Please try again later.");
-  //   $('#game-table_length').hide().html("<span class=\"text-danger\"><i class=\"far fa-times-circle\"></i> Error fetching games. Try again later.</span>").show();
-  // });
+  getSearchParams();
+  getGames(0);
 });
 
-function getGames(ajid, top25) {
+function getGames(ajid) {
   var proxy = 'https://cors-anywhere.herokuapp.com/';
   var url = proxy + 'http://backloggery.com/ajax_moregames.php?user=' + $('#username').text() + '&alpha=1&ajid=' + ajid;
   $.get(url, function(data) {
@@ -37,10 +30,9 @@ function getGames(ajid, top25) {
         comment = comment ? comment : '<span class="text-muted">(no review available)</span>';
 
         if (score) {
-          var award = top25.includes(title) ? 'top25' : '';
-          var gameContent = "<b>" + title + "</b> <small><span class=\"badge badge-secondary badge-system\">" + system + "</span><br />" + comment + "</small>";
+          var gameContent = "<b><a href=\"?q=" + encodeURIComponent(title) + "\">" + title + "</a></b> <small><span class=\"badge badge-secondary badge-system\">" + system + "</span><br />" + comment + "</small>";
           var scoreContent = "<span class=\"badge badge-pill badge-" + colors[score] + "\"><p hidden>" + score + "</p>" + stars[score] + "</span>";
-          var row = $('#game-table').dataTable().fnAddData([gameContent, scoreContent, title, system, award]);
+          var row = $('#game-table').dataTable().fnAddData([gameContent, scoreContent, title, system]);
         }
       }
     });
@@ -48,7 +40,7 @@ function getGames(ajid, top25) {
       $('#game-table').css('display', 'table');
     }
     if (next) {
-      getGames(ajid + 50, top25);
+      getGames(ajid + 50);
     }
   })
   .fail(function() {
@@ -76,7 +68,7 @@ function initializeTable() {
         "width": "10%"
       },
       {
-        "targets": [ 2, 3, 4 ],
+        "targets": [ 2, 3 ],
         "visible": false,
         "searchable": true
       }
@@ -89,7 +81,7 @@ function initializeTable() {
 function initializeFilters() {
   var systems = "<select class=\"custom-select form-control form-control-sm\" id=\"filter-systems\" onchange=\"filterBySystem()\"><option selected>all systems</option><option>" + $('#game-table').dataTable().api().column(3).data().unique().sort().join('</option><option>') + "<\select>";
   var scores = "<select class=\"custom-select form-control form-control-sm\" id=\"filter-scores\" onchange=\"filterByScore()\"><option selected>all scores</option><option>Excellent</option><option>Good</option><option>Okay</option><option>Poor</option></select>";
-  $('#game-table_length').hide().html("<form class=\"form-inline\">Filter by &nbsp" + systems + "&nbsp and by &nbsp" + scores + "&nbsp&nbsp <button type=\"button\" class=\"btn btn-sm btn-outline-dark\" onclick=\"clearFilter()\"><i class=\"fas fa-sync\"></i> Reset</button><input type=\"checkbox\" id=\"filter-top25\" onclick=\"filterByTop25()\">Top 25</form>").fadeIn();
+  $('#game-table_length').hide().html("<form class=\"form-inline\">Filter by &nbsp" + systems + "&nbsp and by &nbsp" + scores + "&nbsp&nbsp <button type=\"button\" class=\"btn btn-sm btn-outline-dark\" onclick=\"clearFilter()\"><i class=\"fas fa-sync\"></i> Reset</button></form>").fadeIn();
 }
 
 function filterBySystem() {
@@ -110,20 +102,18 @@ function filterByScore() {
   }
 }
 
-function filterByTop25() {
-  var c = $('#filter-top25').is(':checked');
-  if (c) {
-    $('#game-table').dataTable().fnFilter('top25', 4);
-  } else {
-    $('#game-table').dataTable().fnFilter("", 4);
-  }
-}
-
 function clearFilter() {
   $('#filter-systems')[0].selectedIndex = 0;
-  $('#filter-scores')[0].selectedIndex = 0;
-  $('#filter-top25').prop('checked', false);
   $('#game-table').dataTable().fnFilter("", 3);
+  $('#filter-scores')[0].selectedIndex = 0;
   $('#game-table').dataTable().fnFilter("", 1);
-  $('#game-table').dataTable().fnFilter("", 4);
+}
+
+function getSearchParams() {
+  var params = new URLSearchParams(document.location.search);
+  var q = params.get('q');
+  if (q) {
+    $('#game-table').dataTable().fnFilter("^" + q + "$", 2, true);
+    $('#game-table_filter').hide().html("<p class=\"text-muted text-sm\">showing single game <strong>" + q + "</strong><br /><a href=\".\"><small>show all games</small></a></p>").fadeIn();
+  }
 }
